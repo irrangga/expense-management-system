@@ -1,0 +1,14 @@
+package dto
+
+import "time"
+
+type ExpenseResponse struct {
+	ID          int64     `json:"id"`
+	UserID      int64     `json:"user_id"`
+	AmountIDR   int64     `json:"amount_idr"`
+	Description string    `json:"description"`
+	ReceiptURL  string    `json:"receipt_url"`
+	Status      string    `json:"status"`
+	SubmittedAt time.Time `json:"submitted_at"`
+	ProcessedAt time.Time `json:"processed_at"`
+}

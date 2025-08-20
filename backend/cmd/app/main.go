@@ -2,6 +2,9 @@ package main
 
 import (
 	"backend/config"
+	expensehandler "backend/internal/expense/handler"
+	expenserepo "backend/internal/expense/repo"
+	expenseusecase "backend/internal/expense/usecase"
 	userhandler "backend/internal/user/handler"
 	userrepo "backend/internal/user/repo"
 	userusecase "backend/internal/user/usecase"
@@ -43,12 +46,15 @@ func main() {
 
 	// Repo initialization.
 	userRepo := userrepo.NewUserRepo(db)
+	expenseRepo := expenserepo.NewExpenseRepo(db)
 
 	// Usecase initialization.
 	userUsecase := userusecase.NewUserUsecase(userRepo, token)
+	expenseUsecase := expenseusecase.NewExpenseUsecase(expenseRepo)
 
 	// Handler initialization.
 	userHandler := userhandler.NewUserHandler(userUsecase)
+	expenseHandler := expensehandler.NewExpenseHandler(expenseUsecase)
 
 	// Router inititialization.
 	router := gin.Default()
@@ -61,6 +67,7 @@ func main() {
 	})
 
 	userhandler.RegisterRoutes(api, userHandler)
+	expensehandler.RegisterRoutes(api, expenseHandler)
 
 	httpPort := ":" + cfg.HTTP.Port
 	router.Run(httpPort)
