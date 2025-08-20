@@ -31,7 +31,7 @@ func (h *expenseHandler) SubmitExpense(ctx *gin.Context) {
 	}
 
 	input := entity.Expense{
-		UserID:      req.UserID,
+		UserID:      ctx.GetInt64("userID"),
 		AmountIDR:   req.AmountIDR,
 		Description: req.Description,
 		ReceiptURL:  req.ReceiptURL,
@@ -43,5 +43,5 @@ func (h *expenseHandler) SubmitExpense(ctx *gin.Context) {
 		return
 	}
 
-	httputil.Success(ctx, mapper.ToExpenseResponse(expense))
+	ctx.JSON(http.StatusOK, mapper.ToExpenseResponse(expense))
 }
