@@ -34,11 +34,11 @@ func (h *userHandler) UserLogin(ctx *gin.Context) {
 		Email: req.Email,
 	}
 
-	user, err := h.userUsecase.UserLogin(ctx.Request.Context(), input)
+	user, token, err := h.userUsecase.UserLogin(ctx.Request.Context(), input)
 	if err != nil {
 		httputil.Error(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	ctx.JSON(http.StatusOK, mapper.ToLoginResponse("token", user))
+	ctx.JSON(http.StatusOK, mapper.ToLoginResponse(token, user))
 }

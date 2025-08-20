@@ -11,6 +11,7 @@ type (
 	Config struct {
 		HTTP     HTTPConfig
 		Postgres PostgresConfig
+		Auth     AuthConfig
 	}
 
 	HTTPConfig struct {
@@ -25,16 +26,21 @@ type (
 		Port     string `env:"POSTGRES_PORT"`
 		SslMode  string `env:"POSTGRES_SSL_MODE"`
 	}
+
+	AuthConfig struct {
+		SecretKey string `env:"JWT_SECRET_KEY"`
+	}
 )
 
+var Cfg = &Config{}
+
 // NewConfig returns app config.
-func NewConfig() (*Config, error) {
+func NewConfig() error {
 	godotenv.Load()
 
-	cfg := &Config{}
-	if err := env.Parse(cfg); err != nil {
-		return nil, fmt.Errorf("config error: %w", err)
+	if err := env.Parse(Cfg); err != nil {
+		return fmt.Errorf("config error: %w", err)
 	}
 
-	return cfg, nil
+	return nil
 }

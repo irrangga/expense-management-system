@@ -5,6 +5,7 @@ import (
 	userhandler "backend/internal/user/handler"
 	userrepo "backend/internal/user/repo"
 	userusecase "backend/internal/user/usecase"
+	"backend/pkg/token"
 	"fmt"
 	"log"
 	"net/http"
@@ -16,10 +17,11 @@ import (
 
 func main() {
 	// Configuration initialization.
-	cfg, err := config.NewConfig()
+	err := config.NewConfig()
 	if err != nil {
 		log.Fatalf("Config error: %s", err)
 	}
+	cfg := config.Cfg
 
 	// Database initialization.
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s",
@@ -36,11 +38,14 @@ func main() {
 		panic("failed to connect database")
 	}
 
+	// Package initialization.
+	token := token.NewToken()
+
 	// Repo initialization.
 	userRepo := userrepo.NewUserRepo(db)
 
 	// Usecase initialization.
-	userUsecase := userusecase.NewUserUsecase(userRepo)
+	userUsecase := userusecase.NewUserUsecase(userRepo, token)
 
 	// Handler initialization.
 	userHandler := userhandler.NewUserHandler(userUsecase)

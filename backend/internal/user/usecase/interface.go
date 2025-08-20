@@ -6,5 +6,5 @@ import (
 )
 
 type UserUsecase interface {
-	UserLogin(ctx context.Context, input entity.User) (entity.User, error)
+	UserLogin(ctx context.Context, input entity.User) (entity.User, string, error)
 }
