@@ -41,6 +41,21 @@ func (m *MockExpenseRepo) EXPECT() *MockExpenseRepoMockRecorder {
 	return m.recorder
 }
 
+// GetExpenseByID mocks base method.
+func (m *MockExpenseRepo) GetExpenseByID(ctx context.Context, id int64) (entity.Expense, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetExpenseByID", ctx, id)
+	ret0, _ := ret[0].(entity.Expense)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetExpenseByID indicates an expected call of GetExpenseByID.
+func (mr *MockExpenseRepoMockRecorder) GetExpenseByID(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExpenseByID", reflect.TypeOf((*MockExpenseRepo)(nil).GetExpenseByID), ctx, id)
+}
+
 // SubmitExpense mocks base method.
 func (m *MockExpenseRepo) SubmitExpense(ctx context.Context, expense entity.Expense) (entity.Expense, error) {
 	m.ctrl.T.Helper()

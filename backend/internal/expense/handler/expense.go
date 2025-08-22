@@ -45,3 +45,19 @@ func (h *expenseHandler) SubmitExpense(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, mapper.ToExpenseResponse(expense))
 }
+
+func (h *expenseHandler) GetExpenseByID(ctx *gin.Context) {
+	id, err := httputil.GetPathParamInt64(ctx, "id")
+	if err != nil {
+		httputil.Error(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	expense, err := h.expenseUsecase.GetExpenseByID(ctx.Request.Context(), id)
+	if err != nil {
+		httputil.Error(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSON(http.StatusOK, mapper.ToExpenseResponse(expense))
+}

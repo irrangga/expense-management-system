@@ -26,3 +26,7 @@ func (uc *expenseUsecase) SubmitExpense(ctx context.Context, input entity.Expens
 
 	return uc.expenseRepo.SubmitExpense(ctx, input)
 }
+
+func (uc *expenseUsecase) GetExpenseByID(ctx context.Context, id int64) (entity.Expense, error) {
+	return uc.expenseRepo.GetExpenseByID(ctx, id)
+}

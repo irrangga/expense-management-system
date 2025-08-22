@@ -39,3 +39,14 @@ func (r *expenseRepo) SubmitExpense(ctx context.Context, expense entity.Expense)
 
 	return mapper.ToExpenseEntity(expenseModel), nil
 }
+
+func (r *expenseRepo) GetExpenseByID(ctx context.Context, id int64) (entity.Expense, error) {
+	var expenseModel model.Expense
+
+	err := r.db.WithContext(ctx).Where("id = ?", id).First(&expenseModel).Error
+	if err != nil {
+		return entity.Expense{}, err
+	}
+
+	return mapper.ToExpenseEntity(expenseModel), nil
+}
