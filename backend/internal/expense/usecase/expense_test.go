@@ -153,3 +153,90 @@ func Test_expenseUsecase_GetExpenseByID(t *testing.T) {
 		})
 	}
 }
+
+func Test_expenseUsecase_GetExpenses(t *testing.T) {
+	ctrl := gomock.NewController(t)
+
+	expenseRepoMock := expense.NewMockExpenseRepo(ctrl)
+
+	expenses := []entity.Expense{
+		{
+			ID:          1,
+			AmountIDR:   10000,
+			Description: "Expense 1",
+			ReceiptURL:  "https://example.com/receipt.jpg",
+		},
+		{
+			ID:          2,
+			AmountIDR:   20000,
+			Description: "Expense 2",
+			ReceiptURL:  "https://example.com/receipt.jpg",
+		},
+	}
+
+	type fields struct {
+		expenseRepo repo.ExpenseRepo
+	}
+	type args struct {
+		ctx      context.Context
+		page     int
+		pageSize int
+	}
+	tests := []struct {
+		name         string
+		fields       fields
+		args         args
+		mock         func()
+		wantExpenses []entity.Expense
+		wantTotal    int
+		wantErr      error
+	}{
+		{
+			name: "GetExpenses returns expenses successfully",
+			fields: fields{
+				expenseRepo: expenseRepoMock,
+			},
+			args: args{
+				ctx:      context.Background(),
+				page:     1,
+				pageSize: 10,
+			},
+			mock: func() {
+				expenseRepoMock.EXPECT().GetExpensesPaginated(gomock.Any(), 1, 10).Return(expenses, 2, nil)
+			},
+			wantExpenses: expenses,
+			wantTotal:    2,
+			wantErr:      nil,
+		},
+		{
+			name: "GetExpenses returns error",
+			fields: fields{
+				expenseRepo: expenseRepoMock,
+			},
+			args: args{
+				ctx:      context.Background(),
+				page:     1,
+				pageSize: 10,
+			},
+			mock: func() {
+				expenseRepoMock.EXPECT().GetExpensesPaginated(gomock.Any(), 1, 10).Return([]entity.Expense{}, 0, assert.AnError)
+			},
+			wantExpenses: []entity.Expense{},
+			wantTotal:    0,
+			wantErr:      assert.AnError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			uc := &expenseUsecase{
+				expenseRepo: tt.fields.expenseRepo,
+			}
+			tt.mock()
+
+			gotExpenses, gotTotal, err := uc.GetExpenses(tt.args.ctx, tt.args.page, tt.args.pageSize)
+			assert.Equal(t, tt.wantExpenses, gotExpenses)
+			assert.Equal(t, tt.wantTotal, gotTotal)
+			assert.ErrorIs(t, tt.wantErr, err)
+		})
+	}
+}

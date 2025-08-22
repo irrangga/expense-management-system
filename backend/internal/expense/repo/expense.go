@@ -40,6 +40,40 @@ func (r *expenseRepo) SubmitExpense(ctx context.Context, expense entity.Expense)
 	return mapper.ToExpenseEntity(expenseModel), nil
 }
 
+func (r *expenseRepo) GetExpensesPaginated(
+	ctx context.Context,
+	page int,
+	pageSize int,
+) ([]entity.Expense, int, error) {
+	var expenseModels []model.Expense
+	var total int64
+
+	// Default values.
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 {
+		pageSize = 10
+	}
+
+	offset := (page - 1) * pageSize
+
+	err := r.db.WithContext(ctx).
+		Limit(pageSize).
+		Offset(offset).
+		Find(&expenseModels).Error
+	if err != nil {
+		return []entity.Expense{}, 0, err
+	}
+
+	err = r.db.WithContext(ctx).Model(&model.Expense{}).Count(&total).Error
+	if err != nil {
+		return []entity.Expense{}, 0, err
+	}
+
+	return mapper.ToExpenseEntities(expenseModels), int(total), err
+}
+
 func (r *expenseRepo) GetExpenseByID(ctx context.Context, id int64) (entity.Expense, error) {
 	var expenseModel model.Expense
 

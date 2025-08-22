@@ -17,3 +17,11 @@ func ToExpenseEntity(expenseModel model.Expense) entity.Expense {
 		ProcessedAt: expenseModel.ProcessedAt,
 	}
 }
+
+func ToExpenseEntities(expenseModels []model.Expense) []entity.Expense {
+	var expenses []entity.Expense
+	for _, expenseModel := range expenseModels {
+		expenses = append(expenses, ToExpenseEntity(expenseModel))
+	}
+	return expenses
+}

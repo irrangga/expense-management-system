@@ -46,6 +46,27 @@ func (h *expenseHandler) SubmitExpense(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, mapper.ToExpenseResponse(expense))
 }
 
+func (h *expenseHandler) GetExpenses(ctx *gin.Context) {
+	page, err := httputil.GetQueryParamInt(ctx, "page")
+	if err != nil {
+		httputil.Error(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+	pageSize, err := httputil.GetQueryParamInt(ctx, "page_size")
+	if err != nil {
+		httputil.Error(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	expenses, total, err := h.expenseUsecase.GetExpenses(ctx.Request.Context(), page, pageSize)
+	if err != nil {
+		httputil.Error(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSON(http.StatusOK, mapper.ToExpenseResponsesPaginated(expenses, page, pageSize, total))
+}
+
 func (h *expenseHandler) GetExpenseByID(ctx *gin.Context) {
 	id, err := httputil.GetPathParamInt64(ctx, "id")
 	if err != nil {

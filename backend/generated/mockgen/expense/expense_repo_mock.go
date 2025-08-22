@@ -56,6 +56,22 @@ func (mr *MockExpenseRepoMockRecorder) GetExpenseByID(ctx, id any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExpenseByID", reflect.TypeOf((*MockExpenseRepo)(nil).GetExpenseByID), ctx, id)
 }
 
+// GetExpensesPaginated mocks base method.
+func (m *MockExpenseRepo) GetExpensesPaginated(ctx context.Context, page, pageSize int) ([]entity.Expense, int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetExpensesPaginated", ctx, page, pageSize)
+	ret0, _ := ret[0].([]entity.Expense)
+	ret1, _ := ret[1].(int)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetExpensesPaginated indicates an expected call of GetExpensesPaginated.
+func (mr *MockExpenseRepoMockRecorder) GetExpensesPaginated(ctx, page, pageSize any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetExpensesPaginated", reflect.TypeOf((*MockExpenseRepo)(nil).GetExpensesPaginated), ctx, page, pageSize)
+}
+
 // SubmitExpense mocks base method.
 func (m *MockExpenseRepo) SubmitExpense(ctx context.Context, expense entity.Expense) (entity.Expense, error) {
 	m.ctrl.T.Helper()
