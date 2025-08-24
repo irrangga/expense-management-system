@@ -48,14 +48,6 @@ func (r *expenseRepo) GetExpensesPaginated(
 	var expenseModels []model.Expense
 	var total int64
 
-	// Default values.
-	if page < 1 {
-		page = 1
-	}
-	if pageSize < 1 {
-		pageSize = 10
-	}
-
 	offset := (page - 1) * pageSize
 
 	err := r.db.WithContext(ctx).
