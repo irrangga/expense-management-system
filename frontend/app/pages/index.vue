@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import type { TableColumn } from "@nuxt/ui";
+import { useAuth } from "~/composables/use-auth";
+
+const { logout } = useAuth();
+
+const handleLogout = () => {
+  logout();
+  navigateTo("/login");
+};
 
 const { data } = await useApi<PaginatedResponse<Expense[]>>("/api/expenses");
 
@@ -36,5 +44,14 @@ const columns: TableColumn<Expense>[] = [
 </script>
 
 <template>
-  <UTable :data="data?.data.flat()" :columns="columns" />
+  <div class="p-4 space-y-4 flex flex-col">
+    <UButton
+      color="error"
+      @click="handleLogout"
+      class="self-end cursor-pointer"
+    >
+      Logout
+    </UButton>
+    <UTable :data="data?.data.flat()" :columns="columns" />
+  </div>
 </template>

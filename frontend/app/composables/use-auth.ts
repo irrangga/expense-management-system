@@ -24,5 +24,10 @@ export const useAuth = () => {
     }
   };
 
-  return { token, user, login };
+  const logout = () => {
+    token.value = null;
+    user.value = null;
+  };
+
+  return { token, user, login, logout };
 };
