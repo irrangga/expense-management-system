@@ -42,6 +42,8 @@ func (r *expenseRepo) SubmitExpense(ctx context.Context, expense entity.Expense)
 
 func (r *expenseRepo) GetExpensesPaginated(
 	ctx context.Context,
+	userID int64,
+	status string,
 	page int,
 	pageSize int,
 ) ([]entity.Expense, int, error) {
@@ -50,15 +52,30 @@ func (r *expenseRepo) GetExpensesPaginated(
 
 	offset := (page - 1) * pageSize
 
-	err := r.db.WithContext(ctx).
-		Limit(pageSize).
-		Offset(offset).
-		Find(&expenseModels).Error
+	query := r.db.WithContext(ctx)
+
+	if userID != 0 {
+		query = query.Where("user_id = ?", userID)
+	}
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+
+	err := query.Limit(pageSize).Offset(offset).Find(&expenseModels).Error
 	if err != nil {
 		return []entity.Expense{}, 0, err
 	}
 
-	err = r.db.WithContext(ctx).Model(&model.Expense{}).Count(&total).Error
+	query = r.db.WithContext(ctx).Model(&model.Expense{})
+
+	if userID != 0 {
+		query = query.Where("user_id = ?", userID)
+	}
+	if status != "" {
+		query = query.Where("status = ?", status)
+	}
+
+	err = query.Count(&total).Error
 	if err != nil {
 		return []entity.Expense{}, 0, err
 	}

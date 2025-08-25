@@ -4,6 +4,7 @@ import (
 	"backend/generated/mockgen/expense"
 	"backend/internal/expense/entity"
 	"backend/internal/expense/repo"
+	"backend/pkg/constant"
 	"context"
 	"testing"
 
@@ -179,6 +180,8 @@ func Test_expenseUsecase_GetExpenses(t *testing.T) {
 	}
 	type args struct {
 		ctx      context.Context
+		userID   int64
+		status   string
 		page     int
 		pageSize int
 	}
@@ -198,11 +201,13 @@ func Test_expenseUsecase_GetExpenses(t *testing.T) {
 			},
 			args: args{
 				ctx:      context.Background(),
+				userID:   1,
+				status:   constant.ExpenseStatusPending,
 				page:     1,
 				pageSize: 10,
 			},
 			mock: func() {
-				expenseRepoMock.EXPECT().GetExpensesPaginated(gomock.Any(), 1, 10).Return(expenses, 2, nil)
+				expenseRepoMock.EXPECT().GetExpensesPaginated(gomock.Any(), int64(1), constant.ExpenseStatusPending, 1, 10).Return(expenses, 2, nil)
 			},
 			wantExpenses: expenses,
 			wantTotal:    2,
@@ -215,11 +220,14 @@ func Test_expenseUsecase_GetExpenses(t *testing.T) {
 			},
 			args: args{
 				ctx:      context.Background(),
+				userID:   1,
+				status:   constant.ExpenseStatusPending,
 				page:     1,
 				pageSize: 10,
 			},
 			mock: func() {
-				expenseRepoMock.EXPECT().GetExpensesPaginated(gomock.Any(), 1, 10).Return([]entity.Expense{}, 0, assert.AnError)
+				expenseRepoMock.EXPECT().GetExpensesPaginated(gomock.Any(), int64(1), constant.ExpenseStatusPending, 1, 10).
+					Return([]entity.Expense{}, 0, assert.AnError)
 			},
 			wantExpenses: []entity.Expense{},
 			wantTotal:    0,
@@ -233,7 +241,7 @@ func Test_expenseUsecase_GetExpenses(t *testing.T) {
 			}
 			tt.mock()
 
-			gotExpenses, gotTotal, err := uc.GetExpenses(tt.args.ctx, tt.args.page, tt.args.pageSize)
+			gotExpenses, gotTotal, err := uc.GetExpenses(tt.args.ctx, tt.args.userID, tt.args.status, tt.args.page, tt.args.pageSize)
 			assert.Equal(t, tt.wantExpenses, gotExpenses)
 			assert.Equal(t, tt.wantTotal, gotTotal)
 			assert.ErrorIs(t, tt.wantErr, err)

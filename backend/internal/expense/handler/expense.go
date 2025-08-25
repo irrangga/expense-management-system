@@ -49,6 +49,8 @@ func (h *expenseHandler) SubmitExpense(ctx *gin.Context) {
 func (h *expenseHandler) GetExpenses(ctx *gin.Context) {
 	page, _ := httputil.GetQueryParamInt(ctx, "page")
 	pageSize, _ := httputil.GetQueryParamInt(ctx, "page_size")
+	status := ctx.Query("status")
+	userID := ctx.GetInt64("userID")
 
 	// Default values.
 	if page < 1 {
@@ -58,7 +60,7 @@ func (h *expenseHandler) GetExpenses(ctx *gin.Context) {
 		pageSize = 10
 	}
 
-	expenses, total, err := h.expenseUsecase.GetExpenses(ctx.Request.Context(), page, pageSize)
+	expenses, total, err := h.expenseUsecase.GetExpenses(ctx.Request.Context(), userID, status, page, pageSize)
 	if err != nil {
 		httputil.Error(ctx, http.StatusInternalServerError, err.Error())
 		return

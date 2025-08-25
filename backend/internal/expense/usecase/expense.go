@@ -27,8 +27,13 @@ func (uc *expenseUsecase) SubmitExpense(ctx context.Context, input entity.Expens
 	return uc.expenseRepo.SubmitExpense(ctx, input)
 }
 
-func (uc *expenseUsecase) GetExpenses(ctx context.Context, page, pageSize int) ([]entity.Expense, int, error) {
-	return uc.expenseRepo.GetExpensesPaginated(ctx, page, pageSize)
+func (uc *expenseUsecase) GetExpenses(
+	ctx context.Context,
+	userID int64,
+	status string,
+	page, pageSize int,
+) ([]entity.Expense, int, error) {
+	return uc.expenseRepo.GetExpensesPaginated(ctx, userID, status, page, pageSize)
 }
 
 func (uc *expenseUsecase) GetExpenseByID(ctx context.Context, id int64) (entity.Expense, error) {
