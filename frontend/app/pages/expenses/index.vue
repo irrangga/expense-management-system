@@ -9,6 +9,10 @@ const handleLogout = () => {
   navigateTo("/login");
 };
 
+const handleAddExpense = () => {
+  navigateTo("/expenses/new");
+};
+
 const { data } = await useApi<PaginatedResponse<Expense[]>>("/api/expenses");
 
 const columns: TableColumn<Expense>[] = [
@@ -52,6 +56,15 @@ const columns: TableColumn<Expense>[] = [
     >
       Logout
     </UButton>
+
+    <UButton
+      color="primary"
+      @click="handleAddExpense"
+      class="flex justify-center cursor-pointer"
+    >
+      Add New Expense
+    </UButton>
+
     <UTable :data="data?.data.flat()" :columns="columns" />
   </div>
 </template>
