@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { TableColumn } from "@nuxt/ui";
 
-const { data } = await useFetch<PaginatedResponse<Expense[]>>("/api/expenses");
+const { data } = await useApi<PaginatedResponse<Expense[]>>("/api/expenses");
 
 const columns: TableColumn<Expense>[] = [
   {

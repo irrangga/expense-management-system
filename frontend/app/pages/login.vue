@@ -19,6 +19,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   try {
     await auth.login(event.data.email!);
     console.log("Login successful", auth.user);
+    await navigateTo("/");
   } catch (err) {
     console.error("Login failed", err);
   }
