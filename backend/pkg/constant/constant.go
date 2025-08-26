@@ -1,6 +1,11 @@
 package constant
 
 const (
+	UserRoleEmployee = "employee"
+	UserRoleManager  = "manager"
+)
+
+const (
 	ExpenseStatusPending  = "pending"
 	ExpenseStatusApproved = "approved"
 	ExpenseStatusRejected = "rejected"

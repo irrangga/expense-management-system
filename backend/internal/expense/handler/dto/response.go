@@ -4,7 +4,7 @@ import "time"
 
 type ExpenseResponse struct {
 	ID               int64      `json:"id"`
-	UserID           int64      `json:"user_id"`
+	UserName         string     `json:"user_name"`
 	AmountIDR        int64      `json:"amount_idr"`
 	Description      string     `json:"description"`
 	ReceiptURL       string     `json:"receipt_url"`

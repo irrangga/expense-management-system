@@ -3,12 +3,19 @@ package mapper
 import (
 	"backend/internal/expense/entity"
 	"backend/internal/expense/repo/model"
+	userentity "backend/internal/user/entity"
 )
 
 func ToExpenseEntity(expenseModel model.Expense) entity.Expense {
 	return entity.Expense{
-		ID:          expenseModel.ID,
-		UserID:      expenseModel.UserID,
+		ID:     expenseModel.ID,
+		UserID: expenseModel.UserID,
+		User: userentity.User{
+			ID:    expenseModel.User.ID,
+			Email: expenseModel.User.Email,
+			Name:  expenseModel.User.Name,
+			Role:  expenseModel.User.Role,
+		},
 		AmountIDR:   expenseModel.AmountIDR,
 		Description: expenseModel.Description,
 		ReceiptURL:  expenseModel.ReceiptURL,

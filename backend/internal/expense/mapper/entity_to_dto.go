@@ -10,7 +10,7 @@ import (
 func ToExpenseResponse(expense entity.Expense) dto.ExpenseResponse {
 	expenseResponse := dto.ExpenseResponse{
 		ID:          expense.ID,
-		UserID:      expense.UserID,
+		UserName:    expense.User.Name,
 		AmountIDR:   expense.AmountIDR,
 		Description: expense.Description,
 		ReceiptURL:  expense.ReceiptURL,

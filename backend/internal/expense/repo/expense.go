@@ -62,6 +62,7 @@ func (r *expenseRepo) GetExpensesPaginated(
 	}
 
 	err := query.
+		Preload("User").
 		Order("submitted_at DESC").
 		Limit(pageSize).
 		Offset(offset).

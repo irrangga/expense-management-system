@@ -60,7 +60,11 @@ func (h *expenseHandler) GetExpenses(ctx *gin.Context) {
 	page, _ := httputil.GetQueryParamInt(ctx, "page")
 	pageSize, _ := httputil.GetQueryParamInt(ctx, "page_size")
 	status := ctx.Query("status")
-	userID := ctx.GetInt64("userID")
+
+	var userID int64 = 0
+	if ctx.GetString("role") == constant.UserRoleEmployee {
+		userID = ctx.GetInt64("userID")
+	}
 
 	// Default values.
 	if page < 1 {
