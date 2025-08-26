@@ -1,0 +1,58 @@
+services:
+  backend:
+    build: ./backend
+    container_name: go-backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8080:8080"
+    depends_on:
+      dbmate:
+        condition: service_completed_successfully
+    networks:
+      - app-network
+
+  frontend:
+    build: ./frontend
+    container_name: nuxt-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      API_URL: http://backend:8080
+    networks:
+      - app-network
+
+  db:
+    image: postgres:16
+    container_name: postgres-db
+    restart: always
+    env_file:
+      - ./backend/.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  dbmate:
+    image: amacneil/dbmate:latest
+    container_name: dbmate
+    depends_on:
+      - db
+    volumes:
+      - ./backend/db/migrations:/db/migrations
+    command: ["--wait", "up"]
+    env_file:
+      - ./backend/.env
+    networks:
+      - app-network
+
+volumes:
+  db_data:
+
+networks:
+  app-network:
+    driver: bridge

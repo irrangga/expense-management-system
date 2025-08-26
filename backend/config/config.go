@@ -19,12 +19,12 @@ type (
 	}
 
 	PostgresConfig struct {
-		Host     string `env:"POSTGRES_HOST"`
-		Username string `env:"POSTGRES_USER"`
-		Password string `env:"POSTGRES_PASSWORD"`
-		Name     string `env:"POSTGRES_DB"`
-		Port     string `env:"POSTGRES_PORT"`
-		SslMode  string `env:"POSTGRES_SSL_MODE"`
+		Host     string `env:"DB_HOST"`
+		Username string `env:"DB_USER"`
+		Password string `env:"DB_PASSWORD"`
+		Name     string `env:"DB_NAME"`
+		Port     string `env:"DB_PORT"`
+		SslMode  string `env:"DB_SSL_MODE"`
 	}
 
 	AuthConfig struct {
