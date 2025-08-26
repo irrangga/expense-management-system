@@ -29,7 +29,7 @@ func (r *expenseRepo) SubmitExpense(ctx context.Context, expense entity.Expense)
 		ReceiptURL:  expense.ReceiptURL,
 		Status:      expense.Status,
 		SubmittedAt: expense.SubmittedAt,
-		ProcessedAt: expense.ProcessedAt,
+		ProcessedAt: nil,
 	}
 
 	err := r.db.WithContext(ctx).Create(&expenseModel).Error
@@ -61,7 +61,11 @@ func (r *expenseRepo) GetExpensesPaginated(
 		query = query.Where("status = ?", status)
 	}
 
-	err := query.Limit(pageSize).Offset(offset).Find(&expenseModels).Error
+	err := query.
+		Order("submitted_at DESC").
+		Limit(pageSize).
+		Offset(offset).
+		Find(&expenseModels).Error
 	if err != nil {
 		return []entity.Expense{}, 0, err
 	}

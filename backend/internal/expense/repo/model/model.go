@@ -10,5 +10,5 @@ type Expense struct {
 	ReceiptURL  string
 	Status      string
 	SubmittedAt time.Time
-	ProcessedAt time.Time
+	ProcessedAt *time.Time
 }

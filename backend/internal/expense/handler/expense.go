@@ -5,6 +5,7 @@ import (
 	"backend/internal/expense/handler/dto"
 	"backend/internal/expense/mapper"
 	"backend/internal/expense/usecase"
+	"backend/pkg/constant"
 	"backend/pkg/httputil"
 	"net/http"
 
@@ -27,6 +28,15 @@ func (h *expenseHandler) SubmitExpense(ctx *gin.Context) {
 	var req dto.SubmitExpenseRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		httputil.Error(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if req.AmountIDR < constant.MinExpenseAmount {
+		httputil.Error(ctx, http.StatusBadRequest, "Amount must be greater than Rp 10.000")
+		return
+	}
+	if req.AmountIDR > constant.MaxExpenseAmount {
+		httputil.Error(ctx, http.StatusBadRequest, "Amount must be less than Rp 50.000.000")
 		return
 	}
 

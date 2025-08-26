@@ -25,7 +25,7 @@ CREATE TABLE public.expenses (
     receipt_url text,
     status text,
     submitted_at timestamp with time zone DEFAULT now() NOT NULL,
-    processed_at timestamp with time zone DEFAULT now() NOT NULL
+    processed_at timestamp with time zone
 );
 
 
@@ -155,4 +155,5 @@ ALTER TABLE ONLY public.expenses
 INSERT INTO public.schema_migrations (version) VALUES
     ('20250819150727'),
     ('20250819152758'),
-    ('20250820064733');
+    ('20250820064733'),
+    ('20250825231815');

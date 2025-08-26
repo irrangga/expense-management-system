@@ -3,6 +3,7 @@ package usecase
 import (
 	"backend/internal/expense/entity"
 	"backend/internal/expense/repo"
+	"backend/pkg/constant"
 	"context"
 	"time"
 )
@@ -20,9 +21,13 @@ func NewExpenseUsecase(
 }
 
 func (uc *expenseUsecase) SubmitExpense(ctx context.Context, input entity.Expense) (entity.Expense, error) {
-	now := time.Now()
-	input.SubmittedAt = now
-	input.ProcessedAt = now
+	if input.AmountIDR < constant.ApprovalThreshold {
+		input.Status = constant.ExpenseStatusApproved
+	} else {
+		input.Status = constant.ExpenseStatusPending
+	}
+
+	input.SubmittedAt = time.Now()
 
 	return uc.expenseRepo.SubmitExpense(ctx, input)
 }
