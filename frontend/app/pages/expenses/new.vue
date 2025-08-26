@@ -9,7 +9,10 @@ const state = reactive({
 });
 
 const submitExpense = async () => {
-  if (!state.amount_idr || !state.description || !state.receipt_url) return;
+  if (!state.amount_idr || !state.description) {
+    alert("Please fill in all required fields.");
+    return;
+  }
 
   try {
     await useApi<Expense>("/api/expenses", {
@@ -60,7 +63,6 @@ const submitExpense = async () => {
           v-model="state.receipt_url"
           type="text"
           placeholder="Enter receipt URL"
-          required
         />
       </UFormField>
 
