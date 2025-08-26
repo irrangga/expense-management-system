@@ -2,7 +2,7 @@
 import type { TableColumn } from "@nuxt/ui";
 import { useAuth } from "~/composables/use-auth";
 
-const { logout } = useAuth();
+const { user, logout } = useAuth();
 
 const handleLogout = () => {
   logout();
@@ -22,7 +22,13 @@ const url = computed(
 
 const { data } = await useApi<PaginatedResponse<Expense[]>>(url);
 
-const columns: TableColumn<Expense>[] = [
+const allColumns: TableColumn<Expense>[] = [
+  {
+    id: "user_name",
+    accessorKey: "user_name",
+    header: "Name",
+    cell: ({ row }) => row.getValue("user_name"),
+  },
   {
     accessorKey: "amount_idr",
     header: "Amount (IDR)",
@@ -64,6 +70,11 @@ const columns: TableColumn<Expense>[] = [
     id: "action",
   },
 ];
+
+const columns: TableColumn<Expense>[] =
+  user.value?.role === "employee"
+    ? allColumns.filter((col) => col.id !== "user_name")
+    : allColumns;
 </script>
 
 <template>
