@@ -13,18 +13,28 @@ const handleAddExpense = () => {
   navigateTo("/expenses/new");
 };
 
-const { data } = await useApi<PaginatedResponse<Expense[]>>("/api/expenses");
+const page = ref(1);
+const pageSize = ref(10);
+
+const url = computed(
+  () => `/api/expenses?page=${page.value}&limit=${pageSize.value}`
+);
+
+const { data } = await useApi<PaginatedResponse<Expense[]>>(url);
 
 const columns: TableColumn<Expense>[] = [
   {
-    accessorKey: "user_id",
-    header: "User ID",
-    cell: ({ row }) => row.getValue("user_id"),
-  },
-  {
     accessorKey: "amount_idr",
-    header: "Amount IDR",
-    cell: ({ row }) => row.getValue("amount_idr"),
+    header: "Amount (IDR)",
+    cell: ({ row }) => {
+      const amount: number = row.getValue("amount_idr");
+
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+      }).format(amount);
+    },
   },
   {
     accessorKey: "description",
@@ -42,7 +52,16 @@ const columns: TableColumn<Expense>[] = [
   {
     accessorKey: "processed_at",
     header: "Processed At",
-    cell: ({ row }) => new Date(row.getValue("processed_at")).toLocaleString(),
+    cell: ({ row }) => {
+      const value: string | undefined = row.getValue("processed_at");
+
+      if (!value) return "-";
+
+      return new Date(value).toLocaleString();
+    },
+  },
+  {
+    id: "action",
   },
 ];
 </script>
@@ -65,6 +84,35 @@ const columns: TableColumn<Expense>[] = [
       Add New Expense
     </UButton>
 
-    <UTable :data="data?.data.flat()" :columns="columns" />
+    <UTable :data="data?.data" :columns="columns">
+      <template #action-cell="{ row }">
+        <UButton
+          type="submit"
+          color="neutral"
+          class="cursor-pointer"
+          @click="navigateTo(`/expenses/${row.original.id}`)"
+        >
+          Details
+        </UButton>
+      </template>
+    </UTable>
+
+    <UPagination
+      class="self-center cursor-pointer"
+      v-model:page="page"
+      :total="data?.total"
+      :items-per-page="pageSize"
+      :show-edges="true"
+      :sibling-count="1"
+      color="primary"
+      size="md"
+      :ui="{
+        first: 'cursor-pointer',
+        prev: 'cursor-pointer',
+        item: 'cursor-pointer',
+        next: 'cursor-pointer',
+        last: 'cursor-pointer',
+      }"
+    />
   </div>
 </template>

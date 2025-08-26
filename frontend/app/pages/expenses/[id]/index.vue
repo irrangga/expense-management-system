@@ -12,7 +12,7 @@ const formattedDate = (value: string) => {
 </script>
 
 <template>
-  <UContainer class="p-4 max-w-xl">
+  <UContainer class="p-4 max-w-lg mx-auto mt-8">
     <nuxt-link
       to="/expenses"
       class="inline-block mb-4 text-primary hover:underline"

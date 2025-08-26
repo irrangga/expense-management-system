@@ -1,5 +1,6 @@
 export default defineEventHandler(async (event) => {
   const authHeader = getHeader(event, "authorization");
+  const query = getQuery(event);
 
   const response: PaginatedResponse<Expense[]> = await $fetch(
     `${process.env.API_URL}/api/expenses`,
@@ -7,6 +8,7 @@ export default defineEventHandler(async (event) => {
       headers: {
         Authorization: authHeader || "",
       },
+      query,
     }
   );
 

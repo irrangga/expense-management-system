@@ -1,4 +1,7 @@
-export function useApi<T>(path: string, options: any = {}) {
+export function useApi<T>(
+  path: string | Ref<string> | ComputedRef<string>,
+  options: any = {}
+) {
   const { token } = useAuth();
 
   return useFetch<T>(path, {
