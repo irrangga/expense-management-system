@@ -97,14 +97,11 @@ const columns: TableColumn<Expense>[] =
 
     <UTable :data="data?.data" :columns="columns">
       <template #action-cell="{ row }">
-        <UButton
-          type="submit"
-          color="neutral"
-          class="cursor-pointer"
-          @click="navigateTo(`/expenses/${row.original.id}`)"
-        >
-          Details
-        </UButton>
+        <nuxt-link :to="`/expenses/${row.original.id}`">
+          <UButton type="submit" color="neutral" class="cursor-pointer">
+            Details
+          </UButton>
+        </nuxt-link>
       </template>
     </UTable>
 

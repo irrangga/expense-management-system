@@ -2,6 +2,7 @@
 import { useRoute } from "vue-router";
 
 const route = useRoute();
+const { user } = useAuth();
 
 const { data } = await useApi<Expense>(`/api/expenses/${route.params.id}`);
 
@@ -9,10 +10,24 @@ const formattedDate = (value: string) => {
   if (!value) return "-";
   return new Date(value).toLocaleString();
 };
+
+const handleApprove = async () => {
+  await useApi(`/api/expenses/${route.params.id}/approve`, {
+    method: "PUT",
+  });
+  navigateTo("/expenses");
+};
+
+const handleReject = async () => {
+  await useApi(`/api/expenses/${route.params.id}/reject`, {
+    method: "PUT",
+  });
+  navigateTo("/expenses");
+};
 </script>
 
 <template>
-  <UContainer class="p-4 max-w-lg mx-auto mt-8">
+  <UContainer class="p-4 max-w-lg mx-auto mt-8 space-y-4">
     <nuxt-link
       to="/expenses"
       class="inline-block mb-4 text-primary hover:underline"
@@ -61,5 +76,23 @@ const formattedDate = (value: string) => {
         Loading expense details...
       </div>
     </UCard>
+
+    <div v-if="user?.role === 'manager'" class="flex justify-between">
+      <UButton
+        color="primary"
+        class="flex justify-center cursor-pointer"
+        @click="handleApprove"
+      >
+        Approve
+      </UButton>
+
+      <UButton
+        color="error"
+        class="flex justify-center cursor-pointer"
+        @click="handleReject"
+      >
+        Reject
+      </UButton>
+    </div>
   </UContainer>
 </template>
