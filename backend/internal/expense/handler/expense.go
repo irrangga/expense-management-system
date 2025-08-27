@@ -98,3 +98,35 @@ func (h *expenseHandler) GetExpenseByID(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, mapper.ToExpenseResponse(expense))
 }
+
+func (h *expenseHandler) ApproveExpense(ctx *gin.Context) {
+	id, err := httputil.GetPathParamInt64(ctx, "id")
+	if err != nil {
+		httputil.Error(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	expense, err := h.expenseUsecase.ApproveExpense(ctx.Request.Context(), id)
+	if err != nil {
+		httputil.Error(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSON(http.StatusOK, mapper.ToExpenseResponse(expense))
+}
+
+func (h *expenseHandler) RejectExpense(ctx *gin.Context) {
+	id, err := httputil.GetPathParamInt64(ctx, "id")
+	if err != nil {
+		httputil.Error(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	expense, err := h.expenseUsecase.RejectExpense(ctx.Request.Context(), id)
+	if err != nil {
+		httputil.Error(ctx, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	ctx.JSON(http.StatusOK, mapper.ToExpenseResponse(expense))
+}

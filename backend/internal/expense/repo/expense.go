@@ -98,3 +98,23 @@ func (r *expenseRepo) GetExpenseByID(ctx context.Context, id int64) (entity.Expe
 
 	return mapper.ToExpenseEntity(expenseModel), nil
 }
+
+func (r *expenseRepo) UpdateExpense(ctx context.Context, expense entity.Expense) (entity.Expense, error) {
+	expenseModel := model.Expense{
+		ID:          expense.ID,
+		UserID:      expense.UserID,
+		AmountIDR:   expense.AmountIDR,
+		Description: expense.Description,
+		ReceiptURL:  expense.ReceiptURL,
+		Status:      expense.Status,
+		SubmittedAt: expense.SubmittedAt,
+		ProcessedAt: expense.ProcessedAt,
+	}
+
+	err := r.db.WithContext(ctx).Save(&expenseModel).Error
+	if err != nil {
+		return entity.Expense{}, err
+	}
+
+	return mapper.ToExpenseEntity(expenseModel), nil
+}

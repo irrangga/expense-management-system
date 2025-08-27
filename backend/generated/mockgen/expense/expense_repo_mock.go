@@ -86,3 +86,18 @@ func (mr *MockExpenseRepoMockRecorder) SubmitExpense(ctx, expense any) *gomock.C
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubmitExpense", reflect.TypeOf((*MockExpenseRepo)(nil).SubmitExpense), ctx, expense)
 }
+
+// UpdateExpense mocks base method.
+func (m *MockExpenseRepo) UpdateExpense(ctx context.Context, expense entity.Expense) (entity.Expense, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateExpense", ctx, expense)
+	ret0, _ := ret[0].(entity.Expense)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateExpense indicates an expected call of UpdateExpense.
+func (mr *MockExpenseRepoMockRecorder) UpdateExpense(ctx, expense any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateExpense", reflect.TypeOf((*MockExpenseRepo)(nil).UpdateExpense), ctx, expense)
+}

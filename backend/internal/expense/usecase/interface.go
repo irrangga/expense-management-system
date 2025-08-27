@@ -9,4 +9,6 @@ type ExpenseUsecase interface {
 	SubmitExpense(ctx context.Context, input entity.Expense) (entity.Expense, error)
 	GetExpenses(ctx context.Context, userID int64, status string, page, pageSize int) ([]entity.Expense, int, error)
 	GetExpenseByID(ctx context.Context, id int64) (entity.Expense, error)
+	ApproveExpense(ctx context.Context, id int64) (entity.Expense, error)
+	RejectExpense(ctx context.Context, id int64) (entity.Expense, error)
 }

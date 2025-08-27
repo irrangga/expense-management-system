@@ -44,3 +44,24 @@ func (uc *expenseUsecase) GetExpenses(
 func (uc *expenseUsecase) GetExpenseByID(ctx context.Context, id int64) (entity.Expense, error) {
 	return uc.expenseRepo.GetExpenseByID(ctx, id)
 }
+
+func (uc *expenseUsecase) ApproveExpense(ctx context.Context, id int64) (entity.Expense, error) {
+	return uc.updateExpenseStatus(ctx, id, constant.ExpenseStatusApproved)
+}
+
+func (uc *expenseUsecase) RejectExpense(ctx context.Context, id int64) (entity.Expense, error) {
+	return uc.updateExpenseStatus(ctx, id, constant.ExpenseStatusRejected)
+}
+
+func (uc *expenseUsecase) updateExpenseStatus(ctx context.Context, id int64, status string) (entity.Expense, error) {
+	expense, err := uc.expenseRepo.GetExpenseByID(ctx, id)
+	if err != nil {
+		return entity.Expense{}, err
+	}
+
+	now := time.Now()
+	expense.ProcessedAt = &now
+	expense.Status = status
+
+	return uc.expenseRepo.UpdateExpense(ctx, expense)
+}
