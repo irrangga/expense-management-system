@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"backend/config"
+	"backend/pkg/constant"
 	"backend/pkg/httputil"
 	"net/http"
 	"strings"
@@ -47,6 +48,17 @@ func AuthMiddleware() gin.HandlerFunc {
 		ctx.Set("email", claims["email"])
 		ctx.Set("role", claims["role"])
 
+		ctx.Next()
+	}
+}
+
+func AuthManagerMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		if ctx.GetString("role") != constant.UserRoleManager {
+			httputil.Error(ctx, http.StatusForbidden, "Access denied")
+			ctx.Abort()
+			return
+		}
 		ctx.Next()
 	}
 }
