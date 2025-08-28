@@ -17,3 +17,8 @@ type PaginatedResponse[T any] struct {
 	TotalPages int `json:"total_pages"`
 	Data       T   `json:"data"`
 }
+
+type Response[T any] struct {
+	Data    T      `json:"data"`
+	Message string `json:"message"`
+}

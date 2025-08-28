@@ -6,9 +6,10 @@ const (
 )
 
 const (
-	ExpenseStatusPending  = "pending"
-	ExpenseStatusApproved = "approved"
-	ExpenseStatusRejected = "rejected"
+	ExpenseStatusPending   = "pending"
+	ExpenseStatusApproved  = "approved"
+	ExpenseStatusRejected  = "rejected"
+	ExpenseStatusCompleted = "completed"
 )
 
 const (

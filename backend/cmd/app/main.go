@@ -5,9 +5,11 @@ import (
 	expensehandler "backend/internal/expense/handler"
 	expenserepo "backend/internal/expense/repo"
 	expenseusecase "backend/internal/expense/usecase"
+	"backend/internal/payment"
 	userhandler "backend/internal/user/handler"
 	userrepo "backend/internal/user/repo"
 	userusecase "backend/internal/user/usecase"
+	"backend/pkg/httputil"
 	"backend/pkg/token"
 	"fmt"
 	"log"
@@ -43,6 +45,8 @@ func main() {
 
 	// Package initialization.
 	token := token.NewToken()
+	httpClient := httputil.NewClient()
+	payment := payment.NewPayment(httpClient)
 
 	// Repo initialization.
 	userRepo := userrepo.NewUserRepo(db)
@@ -50,7 +54,7 @@ func main() {
 
 	// Usecase initialization.
 	userUsecase := userusecase.NewUserUsecase(userRepo, token)
-	expenseUsecase := expenseusecase.NewExpenseUsecase(expenseRepo)
+	expenseUsecase := expenseusecase.NewExpenseUsecase(expenseRepo, payment)
 
 	// Handler initialization.
 	userHandler := userhandler.NewUserHandler(userUsecase)

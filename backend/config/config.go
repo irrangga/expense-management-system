@@ -12,6 +12,7 @@ type (
 		HTTP     HTTPConfig
 		Postgres PostgresConfig
 		Auth     AuthConfig
+		Payment  PaymentConfig
 	}
 
 	HTTPConfig struct {
@@ -29,6 +30,10 @@ type (
 
 	AuthConfig struct {
 		SecretKey string `env:"JWT_SECRET_KEY"`
+	}
+
+	PaymentConfig struct {
+		PaymentProcessorURL string `env:"PAYMENT_PROCESSOR_URL"`
 	}
 )
 
