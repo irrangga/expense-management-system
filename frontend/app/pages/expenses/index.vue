@@ -22,7 +22,7 @@ const url = computed(
 
 const { data } = await useApi<PaginatedResponse<Expense[]>>(url);
 
-const allColumns: TableColumn<Expense>[] = [
+const columns: TableColumn<Expense>[] = [
   {
     id: "user_name",
     accessorKey: "user_name",
@@ -70,11 +70,6 @@ const allColumns: TableColumn<Expense>[] = [
     id: "action",
   },
 ];
-
-const columns: TableColumn<Expense>[] =
-  user.value?.role === "employee"
-    ? allColumns.filter((col) => col.id !== "user_name")
-    : allColumns;
 </script>
 
 <template>
