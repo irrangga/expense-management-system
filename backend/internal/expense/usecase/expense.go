@@ -4,53 +4,61 @@ import (
 	"backend/internal/expense/entity"
 	"backend/internal/expense/repo"
 	"backend/internal/payment"
-	"backend/internal/payment/dto"
+	"backend/internal/task"
+	"backend/internal/task/dto"
 	"backend/pkg/constant"
 	"context"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 )
 
 type expenseUsecase struct {
 	expenseRepo repo.ExpenseRepo
 	payment     payment.Payment
+	task        task.Task
+	asynqClient *asynq.Client
 }
 
 func NewExpenseUsecase(
 	expenseRepo repo.ExpenseRepo,
 	payment payment.Payment,
+	task task.Task,
+	asynqClient *asynq.Client,
 ) ExpenseUsecase {
 	return &expenseUsecase{
 		expenseRepo,
 		payment,
+		task,
+		asynqClient,
 	}
 }
 
 func (uc *expenseUsecase) SubmitExpense(ctx context.Context, input entity.Expense) (entity.Expense, error) {
 	if input.AmountIDR < constant.ApprovalThreshold {
 		input.Status = constant.ExpenseStatusApproved
-
-		// Process payment.
-		payment, err := uc.payment.ProcessPayment(dto.PaymentRequest{
-			Amount:     input.AmountIDR,
-			ExternalID: uuid.NewString(),
-		})
-		if err != nil {
-			return entity.Expense{}, err
-		}
-
-		if payment.Status == "success" {
-			input.Status = constant.ExpenseStatusCompleted
-		}
-
 	} else {
 		input.Status = constant.ExpenseStatusPending
 	}
 
 	input.SubmittedAt = time.Now()
 
-	return uc.expenseRepo.SubmitExpense(ctx, input)
+	expense, err := uc.expenseRepo.SubmitExpense(ctx, input)
+	if err != nil {
+		return entity.Expense{}, err
+	}
+
+	// Process payment in background if approved.
+	if input.Status == constant.ExpenseStatusApproved {
+		err = uc.processPayment(expense)
+		if err != nil {
+			return entity.Expense{}, err
+		}
+	}
+
+	return expense, nil
 }
 
 func (uc *expenseUsecase) GetExpenses(
@@ -85,21 +93,35 @@ func (uc *expenseUsecase) updateExpenseStatus(ctx context.Context, id int64, sta
 	expense.ProcessedAt = &now
 	expense.Status = status
 
-	// Process payment.
+	// Process payment in background if approved.
 	if status == constant.ExpenseStatusApproved {
-		payment, err := uc.payment.ProcessPayment(dto.PaymentRequest{
-			Amount:     expense.AmountIDR,
-			ExternalID: uuid.NewString(),
-		})
+		err = uc.processPayment(expense)
 		if err != nil {
 			return entity.Expense{}, err
-		}
-
-		if payment.Status == "success" {
-			expense.Status = constant.ExpenseStatusCompleted
 		}
 	}
 
 	// Update expense.
 	return uc.expenseRepo.UpdateExpense(ctx, expense)
+}
+
+func (uc *expenseUsecase) processPayment(expense entity.Expense) error {
+	// Process payment in background.
+	paymentTask, err := uc.task.NewPaymentProcessTask(dto.PaymentTaskPayload{
+		ExpenseID:  expense.ID,
+		Amount:     expense.AmountIDR,
+		ExternalID: uuid.New().String(),
+	})
+	if err != nil {
+		return err
+	}
+
+	// Process in 5 seconds to mimic real payment processing.
+	info, err := uc.asynqClient.Enqueue(paymentTask, asynq.ProcessIn(5*time.Second))
+	if err != nil {
+		return err
+	}
+	log.Printf(" [*] Successfully enqueued task: %+v", info)
+
+	return nil
 }

@@ -11,6 +11,7 @@ type (
 	Config struct {
 		HTTP     HTTPConfig
 		Postgres PostgresConfig
+		Redis    RedisConfig
 		Auth     AuthConfig
 		Payment  PaymentConfig
 	}
@@ -26,6 +27,12 @@ type (
 		Name     string `env:"DB_NAME"`
 		Port     string `env:"DB_PORT"`
 		SslMode  string `env:"DB_SSL_MODE"`
+	}
+
+	RedisConfig struct {
+		Address  string `env:"REDIS_ADDRESS"`
+		Password string `env:"REDIS_PASSWORD"`
+		DB       int    `env:"REDIS_DB"`
 	}
 
 	AuthConfig struct {

@@ -2,27 +2,21 @@ package main
 
 import (
 	"backend/config"
-	expensehandler "backend/internal/expense/handler"
 	expenserepo "backend/internal/expense/repo"
-	expenseusecase "backend/internal/expense/usecase"
 	"backend/internal/payment"
 	"backend/internal/task"
-	userhandler "backend/internal/user/handler"
-	userrepo "backend/internal/user/repo"
-	userusecase "backend/internal/user/usecase"
+	"backend/pkg/constant"
 	"backend/pkg/httputil"
-	"backend/pkg/token"
 	"fmt"
 	"log"
-	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/hibiken/asynq"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
+// workers.go
 func main() {
 	// Configuration initialization.
 	err := config.NewConfig()
@@ -52,39 +46,25 @@ func main() {
 		DB:       cfg.Redis.DB,
 	})
 
-	asynqClient := asynq.NewClientFromRedisClient(rdb)
+	srv := asynq.NewServerFromRedisClient(
+		rdb,
+		asynq.Config{Concurrency: 10},
+	)
 
 	// Package initialization.
-	token := token.NewToken()
 	httpClient := httputil.NewClient()
 
 	// Repo initialization.
-	userRepo := userrepo.NewUserRepo(db)
 	expenseRepo := expenserepo.NewExpenseRepo(db)
 
 	// Usecase initialization.
 	payment := payment.NewPayment(httpClient)
 	task := task.NewTask(expenseRepo, payment)
-	userUsecase := userusecase.NewUserUsecase(userRepo, token)
-	expenseUsecase := expenseusecase.NewExpenseUsecase(expenseRepo, payment, task, asynqClient)
 
-	// Handler initialization.
-	userHandler := userhandler.NewUserHandler(userUsecase)
-	expenseHandler := expensehandler.NewExpenseHandler(expenseUsecase)
+	mux := asynq.NewServeMux()
+	mux.HandleFunc(constant.PaymentType, task.HandlePaymentProcessTask)
 
-	// Router inititialization.
-	router := gin.Default()
-
-	api := router.Group("/api")
-	api.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"status": "ok",
-		})
-	})
-
-	userhandler.RegisterRoutes(api, userHandler)
-	expensehandler.RegisterRoutes(api, expenseHandler)
-
-	httpPort := ":" + cfg.HTTP.Port
-	router.Run(httpPort)
+	if err := srv.Run(mux); err != nil {
+		log.Fatal(err)
+	}
 }
