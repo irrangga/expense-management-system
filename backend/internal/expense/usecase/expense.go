@@ -39,6 +39,9 @@ func NewExpenseUsecase(
 func (uc *expenseUsecase) SubmitExpense(ctx context.Context, input entity.Expense) (entity.Expense, error) {
 	if input.AmountIDR < constant.ApprovalThreshold {
 		input.Status = constant.ExpenseStatusApproved
+
+		externalID := uuid.New().String()
+		input.ExternalID = &externalID
 	} else {
 		input.Status = constant.ExpenseStatusPending
 	}
@@ -52,7 +55,7 @@ func (uc *expenseUsecase) SubmitExpense(ctx context.Context, input entity.Expens
 
 	// Process payment in background if approved.
 	if input.Status == constant.ExpenseStatusApproved {
-		err = uc.processPayment(expense)
+		err = uc.sendPaymentProcessTask(expense)
 		if err != nil {
 			return entity.Expense{}, err
 		}
@@ -95,7 +98,10 @@ func (uc *expenseUsecase) updateExpenseStatus(ctx context.Context, id int64, sta
 
 	// Process payment in background if approved.
 	if status == constant.ExpenseStatusApproved {
-		err = uc.processPayment(expense)
+		externalID := uuid.New().String()
+		expense.ExternalID = &externalID
+
+		err = uc.sendPaymentProcessTask(expense)
 		if err != nil {
 			return entity.Expense{}, err
 		}
@@ -105,23 +111,25 @@ func (uc *expenseUsecase) updateExpenseStatus(ctx context.Context, id int64, sta
 	return uc.expenseRepo.UpdateExpense(ctx, expense)
 }
 
-func (uc *expenseUsecase) processPayment(expense entity.Expense) error {
-	// Process payment in background.
-	paymentTask, err := uc.task.NewPaymentProcessTask(dto.PaymentTaskPayload{
-		ExpenseID:  expense.ID,
-		Amount:     expense.AmountIDR,
-		ExternalID: uuid.New().String(),
-	})
-	if err != nil {
-		return err
-	}
+func (uc *expenseUsecase) sendPaymentProcessTask(expense entity.Expense) error {
+	if expense.ExternalID != nil {
+		// Process payment in background.
+		paymentTask, err := uc.task.NewPaymentProcessTask(dto.PaymentTaskPayload{
+			ExpenseID:  expense.ID,
+			Amount:     expense.AmountIDR,
+			ExternalID: *expense.ExternalID,
+		})
+		if err != nil {
+			return err
+		}
 
-	// Process in 5 seconds to mimic real payment processing.
-	info, err := uc.asynqClient.Enqueue(paymentTask, asynq.ProcessIn(5*time.Second))
-	if err != nil {
-		return err
+		// Process in 5 seconds to mimic real payment processing.
+		info, err := uc.asynqClient.Enqueue(paymentTask, asynq.ProcessIn(5*time.Second))
+		if err != nil {
+			return err
+		}
+		log.Printf(" [*] Successfully enqueued task: %+v", info)
 	}
-	log.Printf(" [*] Successfully enqueued task: %+v", info)
 
 	return nil
 }

@@ -1,3 +1,8 @@
+\restrict WsnESRj47XxqKPMc6fRjEb8fHFyFIpI7di2SqAntunM2AHfHdjG6BhVzJanATGF
+
+-- Dumped from database version 16.10 (Ubuntu 16.10-1.pgdg22.04+1)
+-- Dumped by pg_dump version 16.10 (Ubuntu 16.10-1.pgdg22.04+1)
+
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
@@ -25,7 +30,8 @@ CREATE TABLE public.expenses (
     receipt_url text,
     status text,
     submitted_at timestamp with time zone DEFAULT now() NOT NULL,
-    processed_at timestamp with time zone
+    processed_at timestamp with time zone,
+    external_id uuid
 );
 
 
@@ -147,6 +153,8 @@ ALTER TABLE ONLY public.expenses
 -- PostgreSQL database dump complete
 --
 
+\unrestrict WsnESRj47XxqKPMc6fRjEb8fHFyFIpI7di2SqAntunM2AHfHdjG6BhVzJanATGF
+
 
 --
 -- Dbmate schema migrations
@@ -156,4 +164,5 @@ INSERT INTO public.schema_migrations (version) VALUES
     ('20250819150727'),
     ('20250819152758'),
     ('20250820064733'),
-    ('20250825231815');
+    ('20250825231815'),
+    ('20250904022009');

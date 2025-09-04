@@ -13,6 +13,7 @@ type Expense struct {
 	Description string
 	ReceiptURL  string
 	Status      string
+	ExternalID  *string
 	SubmittedAt time.Time
 	ProcessedAt *time.Time
 }

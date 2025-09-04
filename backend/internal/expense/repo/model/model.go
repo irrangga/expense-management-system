@@ -3,6 +3,8 @@ package model
 import (
 	"backend/internal/user/repo/model"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Expense struct {
@@ -13,6 +15,7 @@ type Expense struct {
 	Description string
 	ReceiptURL  string
 	Status      string
+	ExternalID  *uuid.UUID
 	SubmittedAt time.Time
 	ProcessedAt *time.Time
 }

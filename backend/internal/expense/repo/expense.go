@@ -6,6 +6,7 @@ import (
 	"backend/internal/expense/repo/model"
 	"context"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -30,6 +31,11 @@ func (r *expenseRepo) SubmitExpense(ctx context.Context, expense entity.Expense)
 		Status:      expense.Status,
 		SubmittedAt: expense.SubmittedAt,
 		ProcessedAt: nil,
+	}
+
+	if expense.ExternalID != nil {
+		externalID, _ := uuid.Parse(*expense.ExternalID)
+		expenseModel.ExternalID = &externalID
 	}
 
 	err := r.db.WithContext(ctx).Create(&expenseModel).Error
@@ -109,6 +115,11 @@ func (r *expenseRepo) UpdateExpense(ctx context.Context, expense entity.Expense)
 		Status:      expense.Status,
 		SubmittedAt: expense.SubmittedAt,
 		ProcessedAt: expense.ProcessedAt,
+	}
+
+	if expense.ExternalID != nil {
+		externalID, _ := uuid.Parse(*expense.ExternalID)
+		expenseModel.ExternalID = &externalID
 	}
 
 	err := r.db.WithContext(ctx).Save(&expenseModel).Error

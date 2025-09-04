@@ -7,6 +7,12 @@ import (
 )
 
 func ToExpenseEntity(expenseModel model.Expense) entity.Expense {
+	var externalIDString *string
+	if expenseModel.ExternalID != nil {
+		s := expenseModel.ExternalID.String()
+		externalIDString = &s
+	}
+
 	return entity.Expense{
 		ID:     expenseModel.ID,
 		UserID: expenseModel.UserID,
@@ -20,6 +26,7 @@ func ToExpenseEntity(expenseModel model.Expense) entity.Expense {
 		Description: expenseModel.Description,
 		ReceiptURL:  expenseModel.ReceiptURL,
 		Status:      expenseModel.Status,
+		ExternalID:  externalIDString,
 		SubmittedAt: expenseModel.SubmittedAt,
 		ProcessedAt: expenseModel.ProcessedAt,
 	}
