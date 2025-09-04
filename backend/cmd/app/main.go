@@ -66,7 +66,7 @@ func main() {
 	payment := payment.NewPayment(httpClient)
 	task := task.NewTask(expenseRepo, payment)
 	userUsecase := userusecase.NewUserUsecase(userRepo, token)
-	expenseUsecase := expenseusecase.NewExpenseUsecase(expenseRepo, payment, task, asynqClient)
+	expenseUsecase := expenseusecase.NewExpenseUsecase(expenseRepo, task, asynqClient)
 
 	// Handler initialization.
 	userHandler := userhandler.NewUserHandler(userUsecase)

@@ -1,13 +1,21 @@
 package usecase
 
 import (
-	"backend/generated/mockgen/expense"
+	mock_asynq "backend/generated/mockgen/asynq"
+	mock_expense "backend/generated/mockgen/expense"
+	mock_task "backend/generated/mockgen/task"
 	"backend/internal/expense/entity"
 	"backend/internal/expense/repo"
+	"backend/internal/task"
+	"backend/internal/task/dto"
+	"backend/pkg/asynq/client"
 	"backend/pkg/constant"
 	"context"
+	"encoding/json"
 	"testing"
 
+	"github.com/google/uuid"
+	"github.com/hibiken/asynq"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -15,11 +23,17 @@ import (
 func Test_expenseUsecase_SubmitExpense(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	expenseRepoMock := expense.NewMockExpenseRepo(ctrl)
+	expenseRepoMock := mock_expense.NewMockExpenseRepo(ctrl)
 
-	expense := entity.Expense{
+	expenseBelowThreshold := entity.Expense{
 		AmountIDR:   10000,
 		Description: "Expense 1",
+		ReceiptURL:  "https://example.com/receipt.jpg",
+	}
+
+	expenseAboveThreshold := entity.Expense{
+		AmountIDR:   50000000,
+		Description: "Expense 2",
 		ReceiptURL:  "https://example.com/receipt.jpg",
 	}
 
@@ -39,18 +53,33 @@ func Test_expenseUsecase_SubmitExpense(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "SubmitExpense returns expense successfully",
+			name: "SubmitExpense below approval threshold returns expense successfully",
 			fields: fields{
 				expenseRepo: expenseRepoMock,
 			},
 			args: args{
 				ctx:   context.Background(),
-				input: expense,
+				input: expenseBelowThreshold,
 			},
 			mock: func() {
-				expenseRepoMock.EXPECT().SubmitExpense(gomock.Any(), gomock.Any()).Return(expense, nil)
+				expenseRepoMock.EXPECT().SubmitExpense(gomock.Any(), gomock.Any()).Return(expenseBelowThreshold, nil)
 			},
-			want:    expense,
+			want:    expenseBelowThreshold,
+			wantErr: nil,
+		},
+		{
+			name: "SubmitExpense above approval threshold returns expense successfully",
+			fields: fields{
+				expenseRepo: expenseRepoMock,
+			},
+			args: args{
+				ctx:   context.Background(),
+				input: expenseAboveThreshold,
+			},
+			mock: func() {
+				expenseRepoMock.EXPECT().SubmitExpense(gomock.Any(), gomock.Any()).Return(expenseAboveThreshold, nil)
+			},
+			want:    expenseAboveThreshold,
 			wantErr: nil,
 		},
 		{
@@ -60,7 +89,7 @@ func Test_expenseUsecase_SubmitExpense(t *testing.T) {
 			},
 			args: args{
 				ctx:   context.Background(),
-				input: expense,
+				input: expenseBelowThreshold,
 			},
 			mock: func() {
 				expenseRepoMock.EXPECT().SubmitExpense(gomock.Any(), gomock.Any()).Return(entity.Expense{}, assert.AnError)
@@ -86,7 +115,7 @@ func Test_expenseUsecase_SubmitExpense(t *testing.T) {
 func Test_expenseUsecase_GetExpenseByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	expenseRepoMock := expense.NewMockExpenseRepo(ctrl)
+	expenseRepoMock := mock_expense.NewMockExpenseRepo(ctrl)
 
 	expense := entity.Expense{
 		ID:          1,
@@ -158,7 +187,7 @@ func Test_expenseUsecase_GetExpenseByID(t *testing.T) {
 func Test_expenseUsecase_GetExpenses(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	expenseRepoMock := expense.NewMockExpenseRepo(ctrl)
+	expenseRepoMock := mock_expense.NewMockExpenseRepo(ctrl)
 
 	expenses := []entity.Expense{
 		{
@@ -252,10 +281,22 @@ func Test_expenseUsecase_GetExpenses(t *testing.T) {
 func Test_expenseUsecase_ApproveExpense(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	expenseRepoMock := expense.NewMockExpenseRepo(ctrl)
+	expenseRepoMock := mock_expense.NewMockExpenseRepo(ctrl)
+	taskMock := mock_task.NewMockTask(ctrl)
+	asynqClientMock := mock_asynq.NewMockAsynqClient(ctrl)
+
+	payload, _ := json.Marshal(dto.PaymentTaskPayload{
+		ExpenseID:  1,
+		Amount:     150000,
+		ExternalID: uuid.New().String(),
+	})
+
+	taskInfo := asynq.TaskInfo{}
 
 	type fields struct {
 		expenseRepo repo.ExpenseRepo
+		task        task.Task
+		asynqClient client.AsynqClient
 	}
 	type args struct {
 		ctx context.Context
@@ -273,6 +314,8 @@ func Test_expenseUsecase_ApproveExpense(t *testing.T) {
 			name: "ApproveExpense returns expense successfully",
 			fields: fields{
 				expenseRepo: expenseRepoMock,
+				task:        taskMock,
+				asynqClient: asynqClientMock,
 			},
 			args: args{
 				ctx: context.Background(),
@@ -280,6 +323,8 @@ func Test_expenseUsecase_ApproveExpense(t *testing.T) {
 			},
 			mock: func() {
 				expenseRepoMock.EXPECT().GetExpenseByID(gomock.Any(), int64(1)).Return(entity.Expense{}, nil)
+				taskMock.EXPECT().NewPaymentProcessTask(gomock.Any()).Return(asynq.NewTask(constant.PaymentType, payload), nil)
+				asynqClientMock.EXPECT().Enqueue(gomock.Any(), gomock.Any()).Return(&taskInfo, nil)
 				expenseRepoMock.EXPECT().UpdateExpense(gomock.Any(), gomock.Any()).Return(entity.Expense{}, nil)
 			},
 			want:    entity.Expense{},
@@ -290,6 +335,8 @@ func Test_expenseUsecase_ApproveExpense(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			uc := &expenseUsecase{
 				expenseRepo: tt.fields.expenseRepo,
+				task:        tt.fields.task,
+				asynqClient: tt.fields.asynqClient,
 			}
 			tt.mock()
 
@@ -303,7 +350,7 @@ func Test_expenseUsecase_ApproveExpense(t *testing.T) {
 func Test_expenseUsecase_RejectExpense(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	expenseRepoMock := expense.NewMockExpenseRepo(ctrl)
+	expenseRepoMock := mock_expense.NewMockExpenseRepo(ctrl)
 
 	type fields struct {
 		expenseRepo repo.ExpenseRepo

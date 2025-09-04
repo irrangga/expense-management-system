@@ -3,9 +3,9 @@ package usecase
 import (
 	"backend/internal/expense/entity"
 	"backend/internal/expense/repo"
-	"backend/internal/payment"
 	"backend/internal/task"
 	"backend/internal/task/dto"
+	"backend/pkg/asynq/client"
 	"backend/pkg/constant"
 	"context"
 	"log"
@@ -17,20 +17,17 @@ import (
 
 type expenseUsecase struct {
 	expenseRepo repo.ExpenseRepo
-	payment     payment.Payment
 	task        task.Task
-	asynqClient *asynq.Client
+	asynqClient client.AsynqClient
 }
 
 func NewExpenseUsecase(
 	expenseRepo repo.ExpenseRepo,
-	payment payment.Payment,
 	task task.Task,
-	asynqClient *asynq.Client,
+	asynqClient client.AsynqClient,
 ) ExpenseUsecase {
 	return &expenseUsecase{
 		expenseRepo,
-		payment,
 		task,
 		asynqClient,
 	}
